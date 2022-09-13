@@ -1,24 +1,84 @@
-var apiURL = ""
 var apiKey = "75ce623957426941f4666814094bb92e"
 var weatherURL = "https://api.openweathermap.org/data/2.5/"
 var todaySearch = "weather?q="
 var fiveDaySearch = "forecast?q="
+var searchText
+var todayData
 
+function startSearch(event) {
+    event.preventDefault();
+    var target = $(event.target)
+   
+    searchText = target.val()
+    if(searchText === "search") {
+        searchText = $("#searchInput").val();
+    }
+    //clear screensearchText
+    $("#searchInput").val("")
+    $("#city-display").text("No City Selected");
+    $("#today-temp").text("")
+    $("#today-wind").text("")
+    $("#today-humidity").text("")
+    runTodaySearch();
+    runFiveDaySearch();
+}
 
-// api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=75ce623957426941f4666814094bb92e
-
-function runSearch() {
+function runTodaySearch() {
     var url
-    var searchText = document.querySelector("#searchInput").value;
     url = weatherURL + todaySearch + searchText + "&APPID=" + apiKey +"&units=imperial"
     fetch(url)
     .then(function(response) {
         return response.json();
     })
     .then(function(data) {
-        console.log(data)
+        $("#city-display").text(searchText + " " + moment().format("MM/DD/YYYY"));
+        $("#today-temp").text(data.main.temp + " ℉")
+        $("#today-wind").text(data.wind.speed + " MPH")
+        $("#today-humidity").text(data.main.humidity + " %")
+        $("#forecast").text("")
+
     })
 }
 
-// api.openweathermap.org/data/2.5/forecast?q={city name}&appid={API key}
-document.querySelector("#searchBtn").addEventListener("click", runSearch)
+function runFiveDaySearch() {
+    var url
+    url = weatherURL + fiveDaySearch + searchText + "&APPID=" + apiKey +"&units=imperial"
+    fetch(url)
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        console.log(data);
+        //x=4 starts at noon day 1, each 8 records is 24 hours
+        //so x=12 is noon day 2 etc.
+        var x = 4
+        //i=day 
+        for(var i=1; i<=5; i++) {
+            console.log(i, data.list[x].dt_txt);
+            var dayCard = $("<div>")
+            dayCard.addClass("card-body col-2 p-1 m-2 bg-secondary text-white forecast-card")
+            var cardHeader = $("<h6>")
+            cardHeader.addClass("card-title")
+            cardHeader.text(moment(data.list[x].dt_txt).format("MM/DD/YYYY"))
+            var tempText = $("<p>")
+            tempText.addClass("card-text")
+            tempText.text("Temp: " + data.list[x].main.temp + " ℉")
+            var windText = $("<p>")
+            windText.addClass("card-text")
+            windText.text("Wind: " + data.list[x].wind.speed + " MPH")
+            var humText = $("<p>")
+            humText.addClass("card-text")
+            humText.text("Hum: " + data.list[x].main.humidity + " %")
+            dayCard.append(cardHeader)
+            dayCard.append(tempText)
+            dayCard.append(windText)
+            dayCard.append(humText)
+            $("#forecast").append(dayCard)
+
+            x += 8
+        }
+    })
+
+}
+
+$("#search-container").on("click", "button", startSearch)
