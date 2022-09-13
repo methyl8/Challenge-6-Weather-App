@@ -18,4 +18,4 @@ Please note UV index is no longer available in this version of the API
 
 ## Screenshots
 
-![Screenshot](/screenshots/fullscreen.png?raw=true)
+![Screenshot](/screenshot/fullscreen.png?raw=true)
