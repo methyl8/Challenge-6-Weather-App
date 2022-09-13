@@ -38,12 +38,9 @@ function startSearch(event) {
         }
         buildRecents()
     }
-    //clear screensearchText
+    //clear screen
     $("#searchInput").val("")
-    $("#city-display").text("No City Selected");
-    $("#today-temp").text("")
-    $("#today-wind").text("")
-    $("#today-humidity").text("")
+    $("#forecast").text("")
     runTodaySearch();
     runFiveDaySearch();
 }
@@ -53,15 +50,20 @@ function runTodaySearch() {
     url = weatherURL + todaySearch + searchText + "&APPID=" + apiKey +"&units=imperial"
     fetch(url)
     .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {
-        $("#city-display").text(searchText + " " + moment().format("MM/DD/YYYY"));
-        $("#today-temp").text(data.main.temp + " ℉")
-        $("#today-wind").text(data.wind.speed + " MPH")
-        $("#today-humidity").text(data.main.humidity + " %")
-        $("#forecast").text("")
-
+        if(response.ok) {
+            return response.json().then(function(data) {
+                $("#city-display").text(searchText +  moment().format(" (MM/DD/YYYY)"));
+                $("#city-img").attr("src", "http://openweathermap.org/img/wn/" + data.weather[0].icon + ".png")
+                $("#today-temp").text(data.main.temp + " ℉")
+                $("#today-wind").text(data.wind.speed + " MPH")
+                $("#today-humidity").text(data.main.humidity + " %")
+        
+            })
+        }
+        else {
+            $("#city-display").text("An Error occured. " + response.status + " " + response.statusText)
+            $("#city-img").attr("src", "")
+        }
     })
 }
 
@@ -70,40 +72,44 @@ function runFiveDaySearch() {
     url = weatherURL + fiveDaySearch + searchText + "&APPID=" + apiKey +"&units=imperial"
     fetch(url)
     .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {
-        console.log(data);
-        //x=4 starts at noon day 1, each 8 records is 24 hours
-        //so x=12 is noon day 2 etc.
-        var x = 4
-        //i=day 
-        for(var i=1; i<=5; i++) {
-            console.log(i, data.list[x].dt_txt);
-            var dayCard = $("<div>")
-            dayCard.addClass("card-body col-2 p-1 m-2 bg-secondary text-white forecast-card")
-            var cardHeader = $("<h6>")
-            cardHeader.addClass("card-title")
-            cardHeader.text(moment(data.list[x].dt_txt).format("MM/DD/YYYY"))
-            var tempText = $("<p>")
-            tempText.addClass("card-text")
-            tempText.text("Temp: " + data.list[x].main.temp + " ℉")
-            var windText = $("<p>")
-            windText.addClass("card-text")
-            windText.text("Wind: " + data.list[x].wind.speed + " MPH")
-            var humText = $("<p>")
-            humText.addClass("card-text")
-            humText.text("Hum: " + data.list[x].main.humidity + " %")
-            dayCard.append(cardHeader)
-            dayCard.append(tempText)
-            dayCard.append(windText)
-            dayCard.append(humText)
-            $("#forecast").append(dayCard)
-
-            x += 8
+        if(response.ok) {
+             return response.json().then(function(data) {
+                //x=3 starts at noon day 1, each 8 records is 24 hours
+                //so x=11 is noon day 2 etc.
+                var x = 3
+                //i=day 
+                for(var i=1; i<=5; i++) {
+                    var dayCard = $("<div>")
+                    dayCard.addClass("card-body col-2 p-1 m-2 bg-secondary text-white forecast-card")
+                    var cardHeader = $("<h6>")
+                    cardHeader.addClass("card-title")
+                    cardHeader.text(moment(data.list[x].dt_txt).format("MM/DD/YYYY"))
+                    var cardIcon = $("<img>")
+                    cardIcon.attr("src", "http://openweathermap.org/img/wn/" + data.list[x].weather[0].icon + ".png")
+                    var tempText = $("<p>")
+                    tempText.addClass("card-text")
+                    tempText.text("Temp: " + data.list[x].main.temp + " ℉")
+                    var windText = $("<p>")
+                    windText.addClass("card-text")
+                    windText.text("Wind: " + data.list[x].wind.speed + " MPH")
+                    var humText = $("<p>")
+                    humText.addClass("card-text")
+                    humText.text("Hum: " + data.list[x].main.humidity + " %")
+                    dayCard.append(cardHeader)
+                    dayCard.append(cardIcon)
+                    dayCard.append(tempText)
+                    dayCard.append(windText)
+                    dayCard.append(humText)
+                    $("#forecast").append(dayCard)
+        
+                    x += 8
+                }
+        })
+        }
+        else {
+            $("#forecast").text("An Error occured. " + response.status + " " + response.statusText)
         }
     })
-
 }
 
 buildRecents();
