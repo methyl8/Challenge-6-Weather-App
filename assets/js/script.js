@@ -4,6 +4,22 @@ var todaySearch = "weather?q="
 var fiveDaySearch = "forecast?q="
 var searchText
 var todayData
+var recentSearches
+
+function buildRecents() {
+    recentSearches = localStorage.getItem("recentCities")
+    $("#recents").text("")
+    if(recentSearches != null) {
+        var recentArr = recentSearches.split(", ")
+        for(var i=0; i<recentArr.length; i++) {
+        var recentBtn = $("<button>")
+        recentBtn.addClass("btn btn-secondary btn-block")
+        recentBtn.val(recentArr[i])
+        recentBtn.text(recentArr[i])
+        $("#recents").append(recentBtn)
+        }
+    }
+}
 
 function startSearch(event) {
     event.preventDefault();
@@ -12,6 +28,15 @@ function startSearch(event) {
     searchText = target.val()
     if(searchText === "search") {
         searchText = $("#searchInput").val();
+        if(recentSearches == null) {
+            recentSearches = searchText
+            localStorage.setItem("recentCities", searchText)
+        }
+        else {
+            recentSearches = recentSearches + ", " + searchText
+            localStorage.setItem("recentCities", recentSearches)
+        }
+        buildRecents()
     }
     //clear screensearchText
     $("#searchInput").val("")
@@ -80,5 +105,7 @@ function runFiveDaySearch() {
     })
 
 }
+
+buildRecents();
 
 $("#search-container").on("click", "button", startSearch)
