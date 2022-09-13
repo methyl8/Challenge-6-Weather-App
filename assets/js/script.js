@@ -40,6 +40,7 @@ function startSearch(event) {
     }
     //clear screen
     $("#searchInput").val("")
+    $("#forecast-head").text("")
     $("#forecast").text("")
     runTodaySearch();
     runFiveDaySearch();
@@ -53,7 +54,7 @@ function runTodaySearch() {
         if(response.ok) {
             return response.json().then(function(data) {
                 $("#city-display").text(searchText +  moment().format(" (MM/DD/YYYY)"));
-                $("#city-img").attr("src", "http://openweathermap.org/img/wn/" + data.weather[0].icon + ".png")
+                $("#city-img").attr("src", "https://openweathermap.org/img/wn/" + data.weather[0].icon + ".png")
                 $("#today-temp").text(data.main.temp + " ℉")
                 $("#today-wind").text(data.wind.speed + " MPH")
                 $("#today-humidity").text(data.main.humidity + " %")
@@ -74,6 +75,10 @@ function runFiveDaySearch() {
     .then(function(response) {
         if(response.ok) {
              return response.json().then(function(data) {
+                var forecastHead = $("<h5>")
+                forecastHead.text("5-Day Forecast")
+                forecastHead.addClass("text-center")
+                $("#forecast-head").append(forecastHead)
                 //x=3 starts at noon day 1, each 8 records is 24 hours
                 //so x=11 is noon day 2 etc.
                 var x = 3
@@ -85,7 +90,7 @@ function runFiveDaySearch() {
                     cardHeader.addClass("card-title")
                     cardHeader.text(moment(data.list[x].dt_txt).format("MM/DD/YYYY"))
                     var cardIcon = $("<img>")
-                    cardIcon.attr("src", "http://openweathermap.org/img/wn/" + data.list[x].weather[0].icon + ".png")
+                    cardIcon.attr("src", "https://openweathermap.org/img/wn/" + data.list[x].weather[0].icon + ".png")
                     var tempText = $("<p>")
                     tempText.addClass("card-text")
                     tempText.text("Temp: " + data.list[x].main.temp + " ℉")
